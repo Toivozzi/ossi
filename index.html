@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>OssiUNC</title>
+<style>
+:root{--text:#f3f3f3;--muted:#a6a6aa}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{min-height:100vh;background:#090909 url("./tausta.png") center/cover fixed no-repeat}
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+.layout{width:min(1000px,100%);display:grid;grid-template-columns:minmax(0,500px) 280px;gap:28px;align-items:center}
+.title-box,.desc-box{display:inline-block;background:rgba(0,0,0,.62);border-radius:9px;box-shadow:0 8px 25px #0005}
+.title-box{padding:9px 14px;margin-bottom:8px} h1{font-size:42px;line-height:1;margin:0;font-weight:950;letter-spacing:-2.5px}
+.desc-box{padding:7px 10px;margin-bottom:14px}.desc{margin:0;color:#eee;font-size:13px;line-height:1.35}
+.bar{display:flex;justify-content:flex-end;margin-bottom:10px}.bar button{min-width:42px}
+button{border:0;border-radius:8px;background:#eee;color:#111;padding:9px 13px;font-weight:800;cursor:pointer}button:active{transform:scale(.97)}
+.board{width:100%;aspect-ratio:1;background:#000;padding:10px;border-radius:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative;touch-action:none;user-select:none;box-shadow:0 16px 40px #000b}
+.cell{background:#171717;border-radius:7px}.tile{position:absolute;border-radius:7px;overflow:hidden;box-shadow:0 4px 10px #0009;animation:pop .12s ease-out}.tile img{width:100%;height:100%;display:block;object-fit:cover}
+@keyframes pop{from{opacity:0;transform:scale(.78)}to{opacity:1;transform:scale(1)}}
+.scores{display:flex;gap:7px;margin-bottom:10px}.score{min-width:76px;padding:6px 9px;text-align:center;border-radius:8px;background:rgba(0,0,0,.62)}.score small{display:block;font-size:9px;color:#aaa;letter-spacing:1px;font-weight:800}.score b{font-size:19px}
+button.score{border:0;cursor:pointer;font-family:inherit;min-width:120px}
+button.score:active{transform:scale(.97)}
+.leaderboard{background:rgba(8,8,9,.88);border:1px solid #ffffff16;border-radius:12px;padding:17px;box-shadow:0 15px 40px #0009}.leaderboard h2{font-size:17px;margin:0 0 13px}
+.rank{display:grid;grid-template-columns:25px 1fr auto;gap:8px;padding:9px 0;border-bottom:1px solid #ffffff08}.rank:last-child{border:0}.num{color:#777;font-weight:800}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pts{font-weight:800}.empty{color:#777;font-size:12px;padding:12px 0}.status{min-height:17px;color:#aaa;font-size:11px;margin-top:8px}
+.overlay{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:#090909ed;border-radius:8px;padding:22px}.overlay.show{display:flex}.overlay h2{font-size:32px;margin:0 0 7px}.overlay p{color:#aaa;margin:0 0 14px;font-size:13px}.name-row{display:flex;gap:7px;width:min(300px,100%)}.name-row input{min-width:0;flex:1;border:0;border-radius:8px;padding:10px 11px;background:#242424;color:#fff;outline:none}.modal-actions{display:flex;gap:7px;margin-top:9px}.modal-actions button.secondary{background:#2b2b2b;color:#eee}.footer{color:#666;font-size:10px;text-align:center;margin-top:9px}
+.close-btn{position:absolute;top:10px;right:10px;width:28px;height:28px;padding:0;border-radius:50%;background:#2b2b2b;color:#eee;font-size:14px;line-height:1}
+.shop-items{display:flex;flex-direction:column;gap:10px;width:min(320px,100%)}
+.shop-item{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#1c1c1c;border-radius:8px;padding:10px 12px;text-align:left}
+.shop-item-title{font-weight:800;font-size:14px}
+.shop-item-desc{color:#999;font-size:11px;margin-top:2px}
+.buy-btn{background:#eee;color:#111;border-radius:8px;padding:8px 12px;font-weight:800;white-space:nowrap;flex-shrink:0}
+.buy-btn:disabled{opacity:.45;cursor:not-allowed}
+
+.ad{position:fixed;top:12px;right:12px;width:180px;z-index:9999;display:block}
+.ad img{width:100%;height:auto;display:block;border-radius:6px;cursor:pointer}
+@media(max-width:600px){.ad{width:120px;top:8px;right:8px}}
+.ad-paypal{position:fixed;top:12px;left:12px;width:180px;z-index:9999;display:block}
+.ad-paypal img{width:100%;height:auto;display:block;border-radius:6px;cursor:pointer}
+@media(max-width:600px){.ad-paypal{width:120px;top:8px;left:8px}}
+@media(max-width:760px){.page{padding:16px}.layout{grid-template-columns:1fr;max-width:500px;gap:18px}.leaderboard{order:2}.game-side{order:1}}
+</style>
+</head>
+<body>
+<a class="ad" href="https://nettibrous.fi" target="_blank" rel="noopener">
+  <img src="nettibrous.png" alt="Mainos">
+</a>
+<a class="ad-paypal" href="https://www.paypal.com/donate/?hosted_button_id=TW9HPFY4FGFNE" target="_blank" rel="noopener">
+  <img src="paypal.png" alt="PayPal">
+</a>
+<div class="page"><div class="layout">
+<section class="game-side">
+  <div class="title-box"><h1>OssiUNC</h1></div><br>
+  <div class="desc-box"><p class="desc"><strong>Kerää työttömälle Ossille rahaa.</strong> Peli päättyy, kun siirtoja ei enää ole.</p></div>
+  <div class="scores"><div class="score"><small>PISTEET</small><b id="score">0</b></div><div class="score"><small>ENNÄTYS</small><b id="best">0</b></div><button class="score" id="shopBtn" type="button"><small>KAUPPA</small></button></div>
+  <div class="bar"><div style="display:flex;gap:7px"><button id="soundToggle" title="Äänet">🔊</button><button id="newGame">Uusi peli</button></div></div>
+  <div class="board" id="board">
+    <div class="overlay" id="gameOver">
+      <h2 id="gameOverTitle">Peli ohi</h2><p id="finalScore"></p>
+      <div id="nameForm"><div class="name-row"><input id="nameInput" maxlength="20" placeholder="Nimi"><button id="saveScore">Tallenna</button></div>
+      <div class="modal-actions"><button class="secondary" id="skipScore">Jatka ilman tallennusta</button></div></div>
+      <div id="savedActions" style="display:none"><button id="playAgain">Pelaa uudelleen</button></div>
+    </div>
+    <div class="overlay" id="shopOverlay">
+      <button class="close-btn" id="closeShop" type="button" aria-label="Sulje">✕</button>
+      <h2>Kauppa</h2>
+      <div class="shop-items">
+        <div class="shop-item">
+          <div><div class="shop-item-title">Osta Lisärivit 1</div></div>
+          <button class="buy-btn" id="buyTier1" type="button">10000 p</button>
+        </div>
+        <div class="shop-item">
+          <div><div class="shop-item-title">Osta Lisärivit 2</div></div>
+          <button class="buy-btn" id="buyTier2" type="button">25000 p</button>
+        </div>
+      </div>
+      <div class="status" id="shopStatus"></div>
+    </div>
+  </div>
+  <div class="footer">OssiUNC</div>
+</section>
+<aside class="leaderboard"><h2>TOP 10 PISTEET</h2><div id="leaderRows"><div class="empty">Ladataan tuloksia…</div></div><div class="status" id="boardStatus"></div></aside>
+</div></div>
+<audio id="moveSound" src="./sound.mp3" preload="auto"></audio>
+<script>
+(function(){
+"use strict";
+const COLS=4,MAX_ROWS=6,images=["Ossi1.png","Ossi2.png","Ossi3.png","Ossi4.png","Ossi5.png","Ossi6.png","Ossi7.png","Ossi8.png","Ossi9.png","Ossi10.png","Ossi11.png","Ossi12.png","Ossi13.png","Ossi14.png","Ossi15.png"];
+let ROWS=4;
+const board=document.getElementById("board"),scoreEl=document.getElementById("score"),bestEl=document.getElementById("best");
+const overlay=document.getElementById("gameOver"),finalScore=document.getElementById("finalScore"),nameInput=document.getElementById("nameInput"),gameOverTitle=document.getElementById("gameOverTitle");
+const nameForm=document.getElementById("nameForm"),savedActions=document.getElementById("savedActions"),leaderRows=document.getElementById("leaderRows"),statusEl=document.getElementById("boardStatus");
+const sound=document.getElementById("moveSound");
+const shopBtn=document.getElementById("shopBtn"),shopOverlay=document.getElementById("shopOverlay"),closeShop=document.getElementById("closeShop"),buyTier1=document.getElementById("buyTier1"),buyTier2=document.getElementById("buyTier2"),shopStatus=document.getElementById("shopStatus");
+let grid=[],score=0,best=Number(localStorage.getItem("ossinc-best")||0),gameOver=false,touchStart=null,audioCtx=null,soundBuffer=null,brokeRecord=false,extraRows=0;
+let playerName=localStorage.getItem("ossinc-player-name")||"";
+let personalBest=Number(localStorage.getItem("ossinc-personal-best")||0);
+let legacyBest=Number(localStorage.getItem("ossinc-best")||0);
+let soundOn=localStorage.getItem("ossinc-sound")!=="0";
+if(!localStorage.getItem("ossinc-v9-reset")){
+  localStorage.removeItem("ossinc-best");
+  localStorage.removeItem("ossinc-personal-best");
+  localStorage.removeItem("ossinc-player-name");
+  localStorage.removeItem("ossinc-extra-rows");
+  localStorage.removeItem("ossinc-extra-cols");
+  localStorage.setItem("ossinc-v9-reset","1");
+  personalBest=0;
+  playerName="";
+  best=0;
+} else {
+  best=personalBest;
+}
+bestEl.textContent=best;
+bestEl.textContent=best;
+
+function emptyGrid(){return Array.from({length:ROWS},()=>Array(COLS).fill(0))}
+function emptyCells(){let a=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(!grid[r][c])a.push([r,c]);return a}
+function addTile(){let a=emptyCells();if(!a.length)return;let p=a[Math.floor(Math.random()*a.length)];grid[p[0]][p[1]]=1}
+function buildCells(){
+ board.querySelectorAll(".cell").forEach(x=>x.remove());
+ board.style.gridTemplateColumns=`repeat(${COLS},1fr)`;
+ board.style.aspectRatio=`${COLS} / ${ROWS}`;
+ let frag=document.createDocumentFragment();
+ for(let i=0;i<ROWS*COLS;i++){let d=document.createElement("div");d.className="cell";frag.appendChild(d)}
+ board.insertBefore(frag,board.firstChild);
+}
+function newGame(){extraRows=Math.min(Number(localStorage.getItem("ossinc-extra-rows")||0),2);ROWS=4+extraRows;grid=emptyGrid();score=0;gameOver=false;brokeRecord=false;best=personalBest;overlay.classList.remove("show");shopOverlay.classList.remove("show");nameForm.style.display="block";savedActions.style.display="none";buildCells();addTile();addTile();render();updateShopUI()}
+function render(){
+ board.querySelectorAll(".tile").forEach(x=>x.remove());
+ let w=board.clientWidth,h=board.clientHeight,pad=parseFloat(getComputedStyle(board).paddingLeft),gap=parseFloat(getComputedStyle(board).gap);
+ let cellW=(w-pad*2-gap*(COLS-1))/COLS,cellH=(h-pad*2-gap*(ROWS-1))/ROWS;
+ for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){let v=grid[r][c];if(!v)continue;let t=document.createElement("div");t.className="tile";t.style.width=cellW+"px";t.style.height=cellH+"px";t.style.left=(pad+c*(cellW+gap))+"px";t.style.top=(pad+r*(cellH+gap))+"px";let img=document.createElement("img");img.src=images[Math.min(v,images.length)-1];img.alt="Ossi";t.appendChild(img);board.appendChild(t)}
+ scoreEl.textContent=score;
+bestEl.textContent=Math.max(best,personalBest,score);
+}
+function slide(line){let a=line.filter(Boolean),out=[],gain=0;for(let i=0;i<a.length;i++){if(i+1<a.length&&a[i]===a[i+1]){let m=a[i]+1;if(m<=images.length){out.push(m);gain+=2**m}else{gain+=1000}i++}else out.push(a[i])}while(out.length<line.length)out.push(0);return{line:out,gained:gain}}
+function move(dir){
+ if(gameOver)return;
+ let before=JSON.stringify(grid),next=emptyGrid(),gain=0;
+ if(dir==="left"||dir==="right"){
+   for(let r=0;r<ROWS;r++){let line,res;
+     if(dir==="left"){line=grid[r].slice();res=slide(line);next[r]=res.line}
+     else{line=grid[r].slice().reverse();res=slide(line);next[r]=res.line.slice().reverse()}
+     gain+=res.gained;
+   }
+ } else {
+   for(let c=0;c<COLS;c++){let line,res;
+     if(dir==="up"){line=Array.from({length:ROWS},(_,r)=>grid[r][c]);res=slide(line);for(let r=0;r<ROWS;r++)next[r][c]=res.line[r]}
+     else{line=Array.from({length:ROWS},(_,r)=>grid[ROWS-1-r][c]);res=slide(line);res.line.reverse();for(let r=0;r<ROWS;r++)next[r][c]=res.line[r]}
+     gain+=res.gained;
+   }
+ }
+ if(JSON.stringify(next)===before)return;
+ grid=next;score+=gain;if(score>personalBest){
+  personalBest=score;
+  best=personalBest;
+  brokeRecord=true;
+  localStorage.setItem("ossinc-personal-best",String(personalBest));
+}
+ addTile();render();playSound();
+ if(!canMove()){
+  gameOver=true;
+  finalScore.textContent="Pisteet: "+score;
+  if(!playerName){
+    gameOverTitle.textContent="Peli ohi";
+    nameForm.style.display="block";
+    savedActions.style.display="none";
+    overlay.classList.add("show");
+    setTimeout(()=>nameInput.focus(),100);
+  }else if(brokeRecord){
+    gameOverTitle.textContent="Uusi ennätys!";
+    nameForm.style.display="none";
+    savedActions.style.display="block";
+    overlay.classList.add("show");
+    saveKnownScore();
+  }else{
+    gameOverTitle.textContent="Hävisit pelin";
+    nameForm.style.display="none";
+    savedActions.style.display="block";
+    overlay.classList.add("show");
+  }
+}
+}
+function canMove(){if(emptyCells().length)return true;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(c<COLS-1&&grid[r][c]===grid[r][c+1])return true;if(r<ROWS-1&&grid[r][c]===grid[r+1][c])return true}return false}
+function ensureAudio(){
+ try{
+   if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+   if(audioCtx.state==="suspended")audioCtx.resume();
+   return true;
+ }catch(e){return false}
+}
+function playSound(){
+ if(!soundOn)return;
+ if(soundBuffer&&ensureAudio()){
+   try{
+     let s=audioCtx.createBufferSource();
+     let g=audioCtx.createGain();
+     s.buffer=soundBuffer;
+     g.gain.value=0.8;
+     s.connect(g);g.connect(audioCtx.destination);s.start();
+     return;
+   }catch(e){}
+ }
+ try{sound.currentTime=0;sound.volume=0.8;let p=sound.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}
+}
+function stopSound(){
+ try{sound.pause();sound.currentTime=0}catch(e){}
+ try{if(audioCtx&&audioCtx.state==="running")audioCtx.suspend()}catch(e){}
+}
+
+fetch("sound.mp3").then(r=>r.arrayBuffer()).then(b=>{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();return audioCtx.decodeAudioData(b)}).then(b=>soundBuffer=b).catch(()=>{});
+
+async function loadScores(){
+ try{let r=await fetch("save.php?action=list",{cache:"no-store"});let data=await r.json();if(!data.ok)throw Error();renderScores(data.scores||[]);statusEl.textContent=""}
+ catch(e){leaderRows.innerHTML='<div class="empty">Tuloksia ei voitu ladata.</div>';statusEl.textContent="Tarkista että save.php on samassa kansiossa."}
+}
+function renderScores(scores){leaderRows.innerHTML="";if(!scores.length){leaderRows.innerHTML='<div class="empty">Ei vielä tuloksia.</div>';return}scores.slice(0,10).forEach((x,i)=>{let row=document.createElement("div");row.className="rank";let n=document.createElement("span");n.className="num";n.textContent=(i+1)+".";let name=document.createElement("span");name.className="name";name.textContent=x.name;let pts=document.createElement("span");pts.className="pts";pts.textContent=Number(x.score).toLocaleString("fi-FI");row.append(n,name,pts);leaderRows.appendChild(row)})}
+async function saveScore(){
+ let name=nameInput.value.trim();
+ if(!name){nameInput.focus();return}
+ let btn=document.getElementById("saveScore");
+ btn.disabled=true;btn.textContent="Tallennetaan…";
+ try{
+   let r=await fetch("save.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,score:score})});
+   let d=await r.json();
+   if(!d.ok)throw Error(d.error||"Virhe");
+   playerName=name;
+   personalBest=score;
+   localStorage.setItem("ossinc-player-name",playerName);
+   localStorage.setItem("ossinc-personal-best",String(personalBest));
+   best=personalBest;
+   bestEl.textContent=best;
+   nameForm.style.display="none";
+   savedActions.style.display="block";
+   await loadScores();
+ }catch(e){
+   statusEl.textContent="Tallennus epäonnistui.";
+   btn.disabled=false;btn.textContent="Tallenna";
+ }
+}
+
+async function saveKnownScore(){
+ if(!playerName)return;
+ try{
+   let r=await fetch("save.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:playerName,score:score})});
+   let d=await r.json();
+   if(!d.ok)throw Error(d.error||"Virhe");
+   await loadScores();
+ }catch(e){
+   statusEl.textContent="Pisteen päivitys epäonnistui.";
+ }
+}
+
+document.addEventListener("keydown",e=>{if(document.activeElement&&document.activeElement.tagName==="INPUT")return;let m={ArrowLeft:"left",ArrowRight:"right",ArrowUp:"up",ArrowDown:"down",a:"left",d:"right",w:"up",s:"down"}[e.key];if(m){e.preventDefault();move(m)}});
+board.addEventListener("touchstart",e=>{let t=e.changedTouches[0];touchStart={x:t.clientX,y:t.clientY}},{passive:true});
+board.addEventListener("touchend",e=>{if(!touchStart)return;let t=e.changedTouches[0],dx=t.clientX-touchStart.x,dy=t.clientY-touchStart.y;touchStart=null;if(Math.max(Math.abs(dx),Math.abs(dy))<25)return;move(Math.abs(dx)>Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up"))},{passive:true});
+const soundToggle=document.getElementById("soundToggle");
+soundToggle.textContent=soundOn?"🔊":"🔇";
+soundToggle.title=soundOn?"Mykistä äänet":"Ota äänet käyttöön";
+soundToggle.onclick=()=>{
+ soundOn=!soundOn;
+ localStorage.setItem("ossinc-sound",soundOn?"1":"0");
+ soundToggle.textContent=soundOn?"🔊":"🔇";
+ soundToggle.title=soundOn?"Mykistä äänet":"Ota äänet käyttöön";
+ if(!soundOn) stopSound();
+ else ensureAudio();
+};
+soundToggle.setAttribute("aria-pressed",String(!soundOn));
+document.getElementById("newGame").onclick=newGame;document.getElementById("playAgain").onclick=newGame;document.getElementById("skipScore").onclick=()=>{overlay.classList.remove("show");newGame()};document.getElementById("saveScore").onclick=saveScore;
+nameInput.addEventListener("keydown",e=>{if(e.key==="Enter")saveScore()});window.addEventListener("resize",render);
+
+function updateShopUI(){
+ shopStatus.textContent="";
+ if(extraRows>=1){buyTier1.disabled=true;buyTier1.textContent="Ostettu";}
+ else{buyTier1.disabled=false;buyTier1.textContent="10000 p";}
+ if(extraRows>=2){buyTier2.disabled=true;buyTier2.textContent="Ostettu";}
+ else if(extraRows<1){buyTier2.disabled=true;buyTier2.textContent="Osta ensin Lisärivit 1";}
+ else{buyTier2.disabled=false;buyTier2.textContent="25000 p";}
+}
+function buyExtraRow(cost,tier){
+ if(gameOver)return;
+ if(extraRows!==tier-1)return;
+ if(ROWS>=MAX_ROWS)return;
+ if(score<cost){shopStatus.textContent="Ei tarpeeksi pisteitä.";return;}
+ score-=cost;
+ grid.push(Array(COLS).fill(0));
+ ROWS++;
+ extraRows=tier;
+ localStorage.setItem("ossinc-extra-rows",String(extraRows));
+ buildCells();
+ render();
+ updateShopUI();
+ shopStatus.textContent="Ostettu! Uusi rivi lisätty.";
+}
+shopBtn.onclick=()=>{shopOverlay.classList.add("show");updateShopUI()};
+closeShop.onclick=()=>{shopOverlay.classList.remove("show")};
+buyTier1.onclick=()=>buyExtraRow(10000,1);
+buyTier2.onclick=()=>buyExtraRow(25000,2);
+
+newGame();loadScores();setInterval(loadScores,15000);
+})();
+</script>
+</body>
+</html>
